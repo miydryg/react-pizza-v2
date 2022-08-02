@@ -6,49 +6,99 @@ import PizzaBlock from '../components/PizzaBlock/';
 import Skeleton from '../components/PizzaBlock/Skeleton';
 import Pagination from '../components/Pagination';
 import { SearchContext } from '../App';
+import { useSelector, useDispatch } from 'react-redux';
+import { setCategoryId, setCurrentPage, setFilters } from '../redux/slices/filterSlice';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import qs from 'qs';
+import { sortNames } from '../components/Sort';
 
 const Home = () => {
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const isSearch = React.useRef(false);
+  const isMounted = React.useRef(false);
+
+  const { categoryId, sort, currentPage } = useSelector((state) => state.filter);
+
   const { searchValue } = React.useContext(SearchContext);
   const [items, setItems] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
-  const [categoryId, setCategoryId] = React.useState(0);
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [sortType, setSortType] = React.useState({ name: 'популярності', sortProperty: 'rating' });
 
-  React.useEffect(() => {
+  const onClickCategory = (id) => {
+    dispatch(setCategoryId(id));
+  };
+
+  const onChangePage = (number) => {
+    dispatch(setCurrentPage(number));
+  };
+
+  const fetchPizzas = () => {
     setIsLoading(true);
 
-    const oreder = sortType.sortProperty.includes('-') ? 'asc' : 'desc';
-    const sortBy = sortType.sortProperty.replace('-', '');
+    const sortBy = sort.sortProperty.replace('-', '');
+    const oreder = sort.sortProperty.includes('-') ? 'asc' : 'desc';
     const category = categoryId > 0 ? `category=${categoryId}` : '';
     const search = searchValue ? `&search=${searchValue}` : '';
 
-    fetch(
-      `https://62c81ac48c90491c2caeb75d.mockapi.io/items?page=${currentPage}&limit=4&${category}&sortBy=${sortBy}&order=${oreder}${search}`,
-    )
+    axios
+      .get(
+        `https://62c81ac48c90491c2caeb75d.mockapi.io/items?page=${currentPage}&limit=4&${category}&sortBy=${sortBy}&order=${oreder}${search}`,
+      )
       .then((res) => {
-        return res.json();
-      })
-      .then((arr) => {
-        setItems(arr);
+        setItems(res.data);
         setIsLoading(false);
       });
+  };
+
+  React.useEffect(() => {
+    if(isMounted.current){
+      const queryString = qs.stringify({
+        sortProperty: sort.sortProperty,
+        categoryId,
+        currentPage,
+      });
+      navigate(`?${queryString}`);
+    }
+    isMounted.current = true;
+  }, [categoryId, sort.sortProperty, currentPage]);
+
+  React.useEffect(() => {
+    if (window.location.search) {
+      const params = qs.parse(window.location.search.substring(1));
+
+      const sort = sortNames.find((obj) => obj.sortProperty === params.sortProperty);
+
+      dispatch(setFilters({ ...params, sort }));
+      isSearch.current = true;
+    }
+    
+  }, []);
+
+  React.useEffect(() => {
     window.scrollTo(0, 0);
-  }, [categoryId, sortType, searchValue, currentPage]);
+    if (!isSearch.current) {
+      fetchPizzas();
+    }
+    isSearch.current = false;
+  }, [categoryId, sort.sortProperty, searchValue, currentPage]);
+
+
 
   const pizzas = items.map((obj) => <PizzaBlock key={obj.id} {...obj} />);
-  const skeletons = [...new Array(6)].map((_, i) => <Skeleton key={i} />);
+  const skeletons = [...new Array(4)].map((_, i) => <Skeleton key={i} />);
 
   return (
     <div className="container">
       <div className="content__top">
-        <Categories categoryId={categoryId} onClickCategory={(i) => setCategoryId(i)} />
-        <Sort value={sortType} onClickSort={(i) => setSortType(i)} />
+        <Categories categoryId={categoryId} onClickCategory={onClickCategory} />
+        <Sort />
       </div>
       <h2 className="content__title">Всі піци</h2>
       <div className="content__items">{isLoading ? skeletons : pizzas}</div>
 
-      <Pagination onChangePage={number => setCurrentPage(number)} />
+      <Pagination currentPage={currentPage} onChangePage={onChangePage} />
     </div>
   );
 };

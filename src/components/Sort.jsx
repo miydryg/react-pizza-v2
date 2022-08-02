@@ -1,20 +1,24 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { setSort } from '../redux/slices/filterSlice';
 
-const Sort = ({ value, onClickSort }) => {
+export const sortNames = [
+  { name: 'популярності (desc)', sortProperty: 'rating' },
+  { name: 'популярності (asc)', sortProperty: '-rating' },
+  { name: 'ціні (desc)', sortProperty: 'price' },
+  { name: 'ціні (asc)', sortProperty: '-price' },
+  { name: 'алфавіту (desc)', sortProperty: 'title' },
+  { name: 'алфавіту (asc)', sortProperty: '-title' },
+];
+
+const Sort = () => {
   const [open, setOpen] = React.useState(false);
 
-  const sortNames = [
-    { name: 'популярності (desc)', sortProperty: 'rating'},
-    { name: 'популярності (asc)', sortProperty: '-rating'},
-    { name: 'ціні (desc)', sortProperty: 'price'},
-    { name: 'ціні (asc)', sortProperty: '-price'},
-    {name: 'алфавіту (desc)', sortProperty: 'title'},
-    {name: 'алфавіту (asc)', sortProperty: '-title'},
-  ];
- 
+  const dispatch = useDispatch();
+  const sort = useSelector((state) => state.filter.sort);
 
-  const onClickListItem = (i) => {
-    onClickSort(i);
+  const onClickListItem = (obj) => {
+    dispatch(setSort(obj));
     setOpen(false);
   };
 
@@ -32,8 +36,8 @@ const Sort = ({ value, onClickSort }) => {
             fill="#2C2C2C"
           />
         </svg>
-        <b>Сортировка по:</b>
-        <span onClick={() => setOpen(!open)}>{value.name}</span>
+        <b>Сортування по:</b>
+        <span onClick={() => setOpen(!open)}>{sort.name}</span>
       </div>
       {open && (
         <div className="sort__popup">
@@ -43,7 +47,7 @@ const Sort = ({ value, onClickSort }) => {
                 <li
                   key={i}
                   onClick={() => onClickListItem(obj)}
-                  className={value.sortProperty === obj.sortProperty ? 'active' : ''}>
+                  className={sort.sortProperty === obj.sortProperty ? 'active' : ''}>
                   {obj.name}
                 </li>
               );
