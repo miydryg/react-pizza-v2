@@ -4,10 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import CartItem from '../components/CartItem';
 import { clearItem } from '../redux/slices/cartSlice';
 import CartEmpty from '../components/CartEmpty';
+import { selectCart } from '../redux/slices/cartSlice';
 
 const Cart = () => {
   const dispatch = useDispatch();
-  const { totalPrice, items } = useSelector((state) => state.cart);
+  const { totalPrice, items } = useSelector(selectCart);
 
   const totalCount = items.reduce((sum, item) => sum + item.count, 0);
 
@@ -105,11 +106,11 @@ const Cart = () => {
           <div className="cart__bottom-details">
             <span>
               {' '}
-              Всего пицц: <b>{totalCount} шт.</b>{' '}
+              Всього піц: <b>{totalCount} шт.</b>{' '}
             </span>
             <span>
               {' '}
-              Сумма заказа: <b>{totalPrice} грн</b>{' '}
+              Сума замовлення: <b>{totalPrice} грн</b>{' '}
             </span>
           </div>
           <div className="cart__bottom-buttons">
