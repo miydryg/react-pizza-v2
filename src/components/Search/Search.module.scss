@@ -38,3 +38,34 @@
         opacity: 0.8;
     }
 }
+
+@media (max-width: 1200px) {
+    .root{
+        position: relative;
+        left: -40px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+  
+    .root{
+        position: relative;
+        left: 5px;
+        margin-top: 10px;
+    }
+
+    .input{
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 12px 20px;
+        padding-left: 42px;
+        width: 230px;
+        border-radius: 10px;
+        font-size: 16px;
+      
+        &:focus{
+            border: 1px solid rgba(0, 0, 0, 0.2);
+           
+        }
+    }
+
+  }
